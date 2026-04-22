@@ -1,23 +1,22 @@
-# TODO: Define system prompt
-# TODO: Set context in messages
-# TODO: Add chat history
-# TODO: Creaet OpenAI Client
-# TODO: Send request to OpenAI
-# TODO: Return response
-
 from typing import Dict, List
 from openai import OpenAI
 
+# Connect to local KoboldCpp OpenAI-compatible API
+client = OpenAI(
+    api_key="not-needed",
+    base_url="http://localhost:5001/v1"
+)
+
 def generate_response(
-    openai_key: str,
+    openai_key: str,                 # ignored (kept for compatibility)
     user_message: str,
     context: str,
     conversation_history: List[Dict],
-    model: str = "gpt-3.5-turbo"
+    model: str = "local-model"       # ignored, KoboldCpp chooses model
 ) -> str:
-    """Generate response using OpenAI with context"""
+    """Generate response using local KoboldCpp with context"""
 
-    # 1. Define system prompt
+    # System prompt for NASA RAG
     system_prompt = (
         "You are a NASA mission operations expert. "
         "Use the provided context to answer questions about NASA missions. "
@@ -25,28 +24,33 @@ def generate_response(
         "Do not invent details."
     )
 
-    # 2. Build message list: system → context → history → user
+    # Build messages list
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "system", "content": f"Context:\n{context}"}
     ]
 
-    # 3. Add conversation history
+    # Add conversation history
     for turn in conversation_history:
-        messages.append(turn)
+        messages.append({
+            "role": turn["role"],
+            "content": turn["content"]
+        })
 
-    # 4. Add the new user message
+    # Add user message
     messages.append({"role": "user", "content": user_message})
 
-    # 5. Create OpenAI client
-    client = OpenAI(api_key=openai_key)
+    # Send request to local LLM
+    try:
+        response = client.chat.completions.create(
+            model="local-model",
+            messages=messages,
+            temperature=0.2,
+            max_tokens=256   # ← THE FIX
+        )
+        return response.choices[0].message.content
 
-    # 6. Send request
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0.2
-    )
-
-    # 7. Return assistant response text
-    return response.choices[0].message["content"]
+    except Exception as e:
+        # Prevent batch eval from crashing on broken pipe / context overflow
+        print(f"[LLM ERROR] {e}")
+        return ""

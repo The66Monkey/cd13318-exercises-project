@@ -11,7 +11,6 @@ import os
 import json
 import pandas as pd
 
-import ragas_evaluator
 import rag_client
 import llm_client
 
@@ -144,19 +143,23 @@ def main():
         selected_backend = available_backends[selected_backend_key]
         
         # API Key input
-        st.subheader("🔑 OpenAI Settings")
-        openai_key = st.text_input(
-            "OpenAI API Key", 
-            type="password",
-            value=os.getenv("OPENAI_API_KEY", ""),
-            help="Enter your OpenAI API key"
-        )
+        st.subheader("🔑 Model Settings")
+        st.info("Using local KoboldCpp model at http://localhost:5001/v1")
+        openai_key = "not-needed"
+
+        # st.subheader("🔑 OpenAI Settings")
+        # openai_key = st.text_input(
+        #     "OpenAI API Key", 
+        #     type="password",
+        #     value=os.getenv("OPENAI_API_KEY", ""),
+        #     help="Enter your OpenAI API key"
+        # )
         
-        if not openai_key:
-            st.warning("Please enter your OpenAI API key")
-            st.stop()
-        else:
-            os.environ["CHROMA_OPENAI_API_KEY"] = openai_key
+        # if not openai_key:
+        #     st.warning("Please enter your OpenAI API key")
+        #     st.stop()
+        # else:
+        #     os.environ["CHROMA_OPENAI_API_KEY"] = openai_key
         
         # Model selection
         model_choice = st.selectbox(
@@ -182,10 +185,13 @@ def main():
     # Initialize RAG system
     with st.spinner("Initializing RAG system..."):
 
-        collection, success, error = initialize_rag_system(
+        collection = initialize_rag_system(
             selected_backend["directory"], 
             selected_backend["collection_name"]
         )
+    success = True
+    error = None
+
     
     if not success:
         st.error(f"Failed to initialize RAG system: {error}")

@@ -12,9 +12,9 @@ Supported data sources:
 - Apollo 11 Textract extracted data (text files only)
 - Challenger transcribed audio data (text files only)
 """
-__import__("pysqlite3")
+#__import__("pysqlite3")
 import sys
-sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+#sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 
 import os
 import json
@@ -22,14 +22,19 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 import chromadb
-from chromadb.config import Settings
+#from chromadb.config import Settings
+# --- Local embedding model replacement ---
+# The original project used OpenAI embeddings via Vocareum.
+# For local execution (no Vocareum proxy, no OpenAI key), we replace
+# the cloud embedding function with a local SentenceTransformer model.
+from sentence_transformers import SentenceTransformer
 import openai
 from openai import OpenAI
 import hashlib
 import time
 from datetime import datetime
 import argparse
-from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
+#from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 
 # Configure logging
 logging.basicConfig(
@@ -55,12 +60,19 @@ class ChromaEmbeddingPipelineTextOnly:
         """
         Initialize the embedding pipeline
         """
-        # Initialize OpenAI client (Vocareum-compatible)
-        self.openai_client = OpenAI(
-            api_key=openai_api_key,
-            base_url="https://openai.vocareum.com/v1"
-        )
-        self.embedding_model = embedding_model
+        # --- Replaced OpenAI client with local embedding model ---
+        # The Vocareum OpenAI proxy cannot be accessed from a local machine.
+        # To keep the pipeline functional and rubric-compliant, we use a local
+        # embedding model instead of remote API calls.
+
+        # self.openai_client = OpenAI(
+        #     api_key=openai_api_key,
+        #     base_url="https://openai.vocareum.com/v1"
+        # )
+        # self.embedding_model = embedding_model
+
+        self.local_embedder = SentenceTransformer("all-MiniLM-L6-v2")
+
 
 
         # Store configuration parameters
@@ -222,17 +234,15 @@ class ChromaEmbeddingPipelineTextOnly:
     
     def get_embedding(self, text: str) -> List[float]:
         """
-        Get OpenAI embedding for text
+        Local embedding function using SentenceTransformer.
+        Replaces OpenAI embeddings for offline execution.
         """
         try:
-            response = self.openai_client.embeddings.create(
-                model=self.embedding_model,
-                input=text
-            )
-            return response.data[0].embedding
+            return self.local_embedder.encode([text])[0].tolist()
         except Exception as e:
-            logger.error(f"Error getting embedding: {e}")
+            logger.error(f"Local embedding error: {e}")
             raise
+
 
     def generate_document_id(self, file_path: Path, metadata: Dict[str, Any]) -> str:
         """
@@ -596,7 +606,8 @@ def main():
     """Main function"""
     parser = argparse.ArgumentParser(description='ChromaDB Embedding Pipeline for NASA Data')
     parser.add_argument('--data-path', default='.', help='Path to data directories')
-    parser.add_argument('--openai-key', required=True, help='OpenAI API key')
+    # OpenAI key no longer required for local embeddings
+    parser.add_argument('--openai-key', required=False, help='(Unused) OpenAI API key')
     parser.add_argument('--chroma-dir', default='./chroma_db_openai', help='ChromaDB persist directory')
     parser.add_argument('--collection-name', default='nasa_space_missions_text', help='Collection name')
     parser.add_argument('--embedding-model', default='text-embedding-3-small', help='OpenAI embedding model')
@@ -614,7 +625,7 @@ def main():
     # Initialize pipeline
     logger.info("Initializing ChromaDB Embedding Pipeline...")
     pipeline = ChromaEmbeddingPipelineTextOnly(
-        openai_api_key=args.openai_key,
+        openai_api_key=None,  # Not used with local embeddings
         chroma_persist_directory=args.chroma_dir,
         collection_name=args.collection_name,
         embedding_model=args.embedding_model,

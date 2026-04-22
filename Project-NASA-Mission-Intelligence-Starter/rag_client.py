@@ -40,9 +40,11 @@ def discover_chroma_backends() -> Dict[str, Dict[str, str]]:
                 backends[key] = {
                     "directory": str(directory),
                     "collection": col.name,
+                    "collection_name": col.name,   # <-- REQUIRED FOR chat.py
                     "display_name": f"{directory.name} / {col.name} ({count} docs)",
                     "count": count
                 }
+
 
         except Exception as e:
             # 6. Handle inaccessible directories
