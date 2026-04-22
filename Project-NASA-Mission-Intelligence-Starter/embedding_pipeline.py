@@ -12,6 +12,9 @@ Supported data sources:
 - Apollo 11 Textract extracted data (text files only)
 - Challenger transcribed audio data (text files only)
 """
+__import__("pysqlite3")
+import sys
+sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 
 import os
 import json
@@ -62,22 +65,18 @@ class ChromaEmbeddingPipelineTextOnly:
         self.chroma_persist_directory = chroma_persist_directory
         self.collection_name = collection_name
 
-        # Initialize ChromaDB client
+        # Initialize ChromaDB client (Chroma 1.5.7 API)
         self.chroma_client = chromadb.PersistentClient(
-            path=chroma_persist_directory,
-            settings=Settings(anonymized_telemetry=False)
+            path=self.chroma_persist_directory
         )
 
         # Create or get collection
         self.collection = self.chroma_client.get_or_create_collection(
-            name=collection_name
+            name=self.collection_name
         )
-# TODO: Initialize OpenAI client
-# TODO: Store configuration parameters
-# TODO: Initialize ChromaDB client
-# TODO: Create or get collection
+
     
-      def chunk_text(self, text: str, metadata: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
+    def chunk_text(self, text: str, metadata: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
         """
         Split text into chunks with metadata
         """
@@ -114,11 +113,6 @@ class ChromaEmbeddingPipelineTextOnly:
 
         return chunks
 
-# TODO: Handle short texts that don't need chunking
-# TODO: Implement chunking logic with overlap
-# TODO: Try to break at sentence boundaries
-# TODO: Create metadata for each chunk
-#  pass
     
     def check_document_exists(self, doc_id: str) -> bool:
         """
@@ -129,9 +123,7 @@ class ChromaEmbeddingPipelineTextOnly:
             return bool(result.get("ids"))
         except Exception:
             return False
-# TODO: Query collection for document ID
-# TODO: Return True if exists, False otherwise
-#pass
+
     
     def update_document(self, doc_id: str, text: str, metadata: Dict[str, Any]) -> bool:
         """
@@ -237,10 +229,6 @@ class ChromaEmbeddingPipelineTextOnly:
         except Exception as e:
             logger.error(f"Error getting embedding: {e}")
             raise
-# TODO: Call OpenAI embeddings API
-# TODO: Return embedding vector
-# TODO: Add error handling
-#pass
 
     def generate_document_id(self, file_path: Path, metadata: Dict[str, Any]) -> str:
         """
@@ -256,10 +244,7 @@ class ChromaEmbeddingPipelineTextOnly:
         source = str(source).replace(" ", "_").lower()
 
         return f"{mission}_{source}_chunk_{chunk_index:04d}"
-# TODO: Create consistent ID format
-# TODO: Use mission, source, and chunk_index
-# Format: mission_source_chunk_0001
-# pass
+
     
     def process_text_file(self, file_path: Path) -> List[Tuple[str, Dict[str, Any]]]:
         """
@@ -475,14 +460,6 @@ class ChromaEmbeddingPipelineTextOnly:
                 )
 
         return stats        
-# TODO: Handle different update modes (skip, update, replace)
-# TODO: Process documents in batches
-# TODO: For each document:
-#   - Generate document ID
-#   - Check if exists
-#   - Get embedding
-#   - Add or update in collection
-# TODO: Return statistics
     
     def process_all_text_data(self, base_path: str, update_mode: str = 'skip') -> Dict[str, int]:
         """
@@ -538,11 +515,7 @@ class ChromaEmbeddingPipelineTextOnly:
                 stats["errors"] += 1
 
         return stats
-# TODO: Get files to process
-# TODO: Loop through each file
-# TODO: Process file and add to collection
-# TODO: Update statistics
-# TODO: Handle errors gracefully
+
     
     def get_collection_info(self) -> Dict[str, Any]:
         """Get information about the ChromaDB collection"""
@@ -571,8 +544,7 @@ class ChromaEmbeddingPipelineTextOnly:
         except Exception as e:
             logger.error(f"Error querying collection: {e}")
             return {"error": str(e)}
-# TODO: Perform test query and return results
-# pass
+
     
     def get_collection_stats(self) -> Dict[str, Any]:
         """Get detailed statistics about the collection"""
