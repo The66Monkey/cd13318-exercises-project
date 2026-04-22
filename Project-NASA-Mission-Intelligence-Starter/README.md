@@ -1,5 +1,5 @@
 # NASA Mission Intelligence — Offline RAG Stack
-# (No clouds. No keys. No telemetry. Just metal.)
+(No clouds. No keys. No telemetry. Just metal.)
 
 ## 1. Model Drop
 DeepSeek‑R1‑Distill‑Qwen‑14B‑Uncensored.Q4_K_M.gguf  
