@@ -16,8 +16,7 @@ koboldcpp-linux-x64 \
   --model ~/LocalModels/DeepSeek-R1-Distill-Qwen-14B-Uncensored.Q4_K_M.gguf \
   --usevulkan \
   --gpulayers 999 \
-  --contextsize 4096 \
-  --api
+  --contextsize 4096
 
 Ports:
 - OpenAI‑style: http://localhost:5001/v1
