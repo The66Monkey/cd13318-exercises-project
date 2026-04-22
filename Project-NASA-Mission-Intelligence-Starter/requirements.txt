@@ -15,8 +15,7 @@ transformers==4.41.2
 accelerate==0.31.0
 sentencepiece==0.2.0
 
-# RAGAS (only relevancy + faithfulness)
-ragas==0.4.3
-
 # Misc
 python-dotenv==1.0.1
+
+# RAGAS was removed due to not running well localy.
