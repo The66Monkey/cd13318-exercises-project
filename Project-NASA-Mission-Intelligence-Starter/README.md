@@ -103,4 +103,21 @@ evaluation_dataset.txt # Questions for scoring
 - Model can leak <think> traces; expected for uncensored builds.  
 - Retrieval + trimming keeps context under 4096 tokens.  
 
-This is a self‑contained RAG machine built for local execution, no dependencies on external LLMs or hosted services.
+## 9. Local Hardware Profile
+This stack runs on a 2016‑era desktop that refuses to die:
+
+- Intel Core i7‑6700K (Skylake, 4C/8T @ 4.3 GHz)
+- 16 GB DDR4
+- Intel Arc B580 (Battlemage) — Vulkan compute, primary GPU
+- NVIDIA GTX 970 — secondary card, display duties
+- Dual NVMe SSDs + 1 TB HDD
+- Linux Mint 22.3 (Ubuntu 24.04 base), kernel 6.17
+- Xorg session for stable multi‑GPU behavior
+
+KoboldCpp pushes the 14B Q4_K_M model through Vulkan on the Arc card.  
+The GTX 970 handles the monitors so the compute path stays clean.  
+ChromaDB sits on NVMe and responds instantly.  
+The whole RAG loop runs offline without breaking a sweat.
+
+
+## This is a self‑contained RAG machine built for local execution, no dependencies on external LLMs or hosted services.
