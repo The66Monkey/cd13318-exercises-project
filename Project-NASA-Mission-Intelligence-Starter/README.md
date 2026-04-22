@@ -117,7 +117,9 @@ This stack runs on a 2016‑era desktop that refuses to die:
 KoboldCpp pushes the 14B Q4_K_M model through Vulkan on the Arc card.  
 The GTX 970 handles the monitors so the compute path stays clean.  
 ChromaDB sits on NVMe and responds instantly.  
-The whole RAG loop runs offline without breaking a sweat.
 
+## 10. Assistance and Tools
+Development used VS Codium, the Continue extension, and a local DeepSeek model for code assistance along with some structure help from MS:Copilot.
+Final design and implementation were written and validated manually.
 
 ## This is a self‑contained RAG machine built for local execution, no dependencies on external LLMs or hosted services.
