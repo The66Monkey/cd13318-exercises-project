@@ -55,9 +55,13 @@ class ChromaEmbeddingPipelineTextOnly:
         """
         Initialize the embedding pipeline
         """
-        # Initialize OpenAI client
-        self.openai_client = OpenAI(api_key=openai_api_key)
+        # Initialize OpenAI client (Vocareum-compatible)
+        self.openai_client = OpenAI(
+            api_key=openai_api_key,
+            base_url="https://openai.vocareum.com/v1"
+        )
         self.embedding_model = embedding_model
+
 
         # Store configuration parameters
         self.chunk_size = chunk_size
